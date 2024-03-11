@@ -40,15 +40,6 @@ class Expression
     }
 }
 
-class Equation
-{
-    constructor(left, right)
-    {
-        this.left = left
-        this.right = right
-    }
-}
-
 class Fraction
 {
     constructor(numerator, denominator = null)
