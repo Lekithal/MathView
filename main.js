@@ -1,6 +1,57 @@
+let isNumber = str => !isNaN(parseFloat(str))
+
+class Expression
+{
+    constructor(string)
+    {
+        let delimiters = ["+", "-", "*"]
+
+        let regex = new RegExp(delimiters.map(d => d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+        let parts = string.split(regex);
+        let result = [];
+        
+        parts.forEach
+        (
+            (part, index) =>
+            {
+                result.push(part);
+                if (index < parts.length - 1)
+                {
+                    result.push(string.match(regex)[index]);
+                }
+            }
+        );
+        
+        result = result.map(char => 
+        {
+            if (char.includes("/"))
+            {
+                let fraction = new Fraction(char.split("/"));
+                let numerator = fraction[0];
+                let denominator = fraction[1];
+
+                return new Fraction(numerator, denominator)
+            }
+
+            return isNumber(char) ? new Fraction(Number(char), 1) : new Operation(char)
+        })
+
+        this.value = result
+    }
+}
+
+class Equation
+{
+    constructor(left, right)
+    {
+        this.left = left
+        this.right = right
+    }
+}
+
 class Fraction
 {
-    constructor(numerator, denominator)
+    constructor(numerator, denominator = null)
     {
         this.numerator = numerator;
         this.denominator = denominator;
