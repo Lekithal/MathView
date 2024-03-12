@@ -91,6 +91,11 @@ class Expression
         index = this.value.findIndex(term => term instanceof Operation && ["+", "-"].includes(term.operation));
         if (index != -1) { return [index]; }
     }
+
+    html()
+    {
+        
+    }
 }
 
 class Fraction
