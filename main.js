@@ -4,39 +4,92 @@ class Expression
 {
     constructor(string)
     {
-        let delimiters = ["+", "-", "*"]
-
-        let regex = new RegExp(delimiters.map(d => d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
-        let parts = string.split(regex);
-        let result = [];
         
-        parts.forEach
-        (
-            (part, index) =>
-            {
-                result.push(part);
-                if (index < parts.length - 1)
-                {
-                    result.push(string.match(regex)[index]);
-                }
-            }
-        );
-        
-        result = result.map(char => 
+        function Valuefy(string)
         {
-            if (char.includes("/"))
+            let delimiters = ["+", "-", "*", "^"]
+
+            let regex = new RegExp(delimiters.map(d => d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+            let parts = string.split(regex);
+            let result = [];
+            
+            parts.forEach
+            (
+                (part, index) =>
+                {
+                    result.push(part);
+                    if (index < parts.length - 1)
+                    {
+                        result.push(string.match(regex)[index]);
+                    }
+                }
+            );
+            
+            result = result.map(char => 
             {
-                let fraction = new Fraction(char.split("/"));
-                let numerator = fraction[0];
-                let denominator = fraction[1];
+                if (char.includes("/"))
+                {
+                    let fraction = char.split("/");
+                    let numerator = Number(fraction[0]);
+                    let denominator = Number(fraction[1]);
 
-                return new Fraction(numerator, denominator)
+                    return new Fraction(numerator, denominator);
+                }
+                
+                return isNumber(char) ? new Fraction(Number(char), 1) : new Operation(char)
+            })
+                        
+            return result
+        }
+
+        
+
+        let regex = /([^(]+)|\(([^)]+)\)/g;
+        let matches = string.match(regex).filter(Boolean); // Filter out undefined matches
+      
+        let result = [];
+
+        for (let i = 0; i < matches.length; i++)
+        {
+            if (matches[i][0] == "(")
+            {
+                let text = matches[i];
+                text = text.substring(1, text.length - 1);
+
+                result = result.concat(new Expression(text));
             }
+            else
+            {
+                result = result.concat(Valuefy(matches[i]));
+            }
+        }
 
-            return isNumber(char) ? new Fraction(Number(char), 1) : new Operation(char)
-        })
+        result = result.filter(el => !(el instanceof Operation) || el.operation !== null)
 
         this.value = result
+    }
+
+    nextOperation()
+    {
+        let index = -1
+
+        //Parenthesis
+        index = this.value.findIndex(term => term instanceof Expression);
+        if (index != -1) {
+            return [index].concat(this.value[index].next)
+        }
+
+        //Exponent
+        index = this.value.findIndex(term => term instanceof Operation && term.operation == "^");
+        if (index != -1) { return [index]; }
+
+        //Multiplication
+        index = this.value.findIndex(term => term instanceof Operation && term.operation == "*");
+        if (index != -1) { return [index]; }
+
+        //Addition / Subtraction
+        index = this.value.findIndex(term => term instanceof Operation && ["+", "-"].includes(term.operation));
+        if (index != -1) { return [index]; }
     }
 }
 
@@ -63,7 +116,7 @@ class Operation
 {
     constructor(operation)
     {
-        this.operation = operation;
+        this.operation = "+-*^".includes(operation) && operation != "" ? operation : null;
     }
 }
 
