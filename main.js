@@ -76,7 +76,7 @@ class Expression
         //Parenthesis
         index = this.value.findIndex(term => term instanceof Expression);
         if (index != -1) {
-            return [index].concat(this.value[index].next)
+            return [index].concat(this.value[index].nextOperation())
         }
 
         //Exponent
